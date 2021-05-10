@@ -6,6 +6,7 @@ from scenes import SingleView
 from pipelines import RandomKeypointsRender, DrawNormalizedKeypoints
 from paz.backend.image import show_image
 from trimesh import load_mesh
+import pyrender
 
 # mesh_path = '.keras/paz/datasets/ycb_models/035_power_drill/textured.obj'
 mesh_path = 'Repositories/solar_panels/solar_panel_02/meshes/obj/base_link.obj'
@@ -13,12 +14,24 @@ image_path = 'Pictures/JPEGImages/*.jpg'
 
 mesh_path = os.path.join(os.path.expanduser('~'), mesh_path)
 mesh = load_mesh(mesh_path)
-mesh = mesh.dump(concatenate=True)
+myscene = pyrender.Scene.from_trimesh_scene(mesh)
+nodes = list(myscene.nodes)
+meshes = list(myscene.meshes)
+myscene.ambient_light = [0.3, 0.3, 0.3, 1.0]
+
+for node in nodes:
+    if node.mesh.bounds[0, 0] > 0:
+        a = myscene.remove_node(node)
+        print(a)
+
+# pyrender.Viewer(scene, use_raymond_lighting=True)
+# node = scene.nodes
+# mesh = mesh.dump(concatenate=True)
 
 image_shape = (512, 512)
 y_fov = 3.14159 / 4.0
 distance = [0.5, 1.5]
-light = [0.5, 30]
+light = [30, 30]
 top_only = False
 roll = None
 shift = None
@@ -41,7 +54,7 @@ keypoints = np.array([[0.25, 0.0, 0.0, 1.0],
                       [0.0, 0.0, 0.25, 1.0]])
 """
 
-args = (mesh, image_shape, y_fov, distance, light, top_only, roll, shift)
+args = (myscene, image_shape, y_fov, distance, light, top_only, roll, shift)
 scene = SingleView(*args)
 scene.scene.ambient_light = [0.3, 0.3, 0.3, 2.0]
 image, alpha_channel, world_to_camera = scene.render()

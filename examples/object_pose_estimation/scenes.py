@@ -20,25 +20,28 @@ class SingleView():
         roll: Float, to sample [-roll, roll] rolls of the Z OpenGL camera axis.
         shift: Float, to sample [-shift, shift] to move in X, Y OpenGL axes.
     """
-    def __init__(self, mesh, viewport_size=(128, 128), y_fov=3.14159 / 4.0,
+    def __init__(self, scene, viewport_size=(128, 128), y_fov=3.14159 / 4.0,
                  distance=[0.3, 0.5], light=[0.5, 30], top_only=False,
                  roll=None, shift=None):
         self.distance, self.roll, self.shift = distance, roll, shift
         self.light_intensity, self.top_only = light, top_only
-        self._build_scene(mesh, viewport_size, light, y_fov)
+        self._build_scene(scene, viewport_size, light, y_fov)
         self.renderer = OffscreenRenderer(viewport_size[0], viewport_size[1])
         self.viewport_size = viewport_size
         self.RGBA = RenderFlags.RGBA
         self.epsilon = 0.01
 
-    def _build_scene(self, mesh, size, light, y_fov):
-        self.scene = Scene(bg_color=[0, 0, 0, 0])
+    def _build_scene(self, scene, size, light, y_fov):
+        # self.scene = Scene(bg_color=[0, 0, 0, 0])
+        self.scene = scene
+        self.mesh = list(self.scene.nodes)[0]
         self.light = self.scene.add(
             DirectionalLight([1.0, 1.0, 1.0], np.mean(light)))
         self.camera = self.scene.add(
             PerspectiveCamera(y_fov, aspectRatio=np.divide(*size)))
-        self.mesh = self.scene.add(
-            Mesh.from_trimesh(mesh, smooth=True))
+        # self.mesh = list(self.scene.nodes)[0]
+        # self.mesh = self.scene.add(
+        #     Mesh.from_trimesh(mesh, smooth=True))
         self.world_origin = self.mesh.mesh.centroid
 
     def _sample_parameters(self):
